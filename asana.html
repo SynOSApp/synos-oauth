@@ -5,8 +5,8 @@ const params = new URLSearchParams(window.location.search);
 const code = params.get('code');
 const error = params.get('error');
 if (code) {
-  window.location.href = `synos://asana-oauth?code=${code}`;
+  window.location.href = `synos://oauth?code=${code}&service=asana`;
 } else if (error) {
-  window.location.href = `synos://asana-oauth?error=${error}`;
+  window.location.href = `synos://oauth?error=${error}&service=asana`;
 }
 </script><p>Connecting to SynOS...</p></body></html>
