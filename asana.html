@@ -1,12 +1,88 @@
 <!DOCTYPE html>
-<html><head><title>Connecting to SynOS...</title></head>
-<body><script>
-const params = new URLSearchParams(window.location.search);
-const code = params.get('code');
-const error = params.get('error');
-if (code) {
-  window.location.href = `synos://oauth?code=${code}&service=asana`;
-} else if (error) {
-  window.location.href = `synos://oauth?error=${error}&service=asana`;
-}
-</script><p>Connecting to SynOS...</p></body></html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Connecting to Asana...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f06595 0%, #e64980 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Connecting to Asana...</h1>
+        <div class="spinner"></div>
+        <p>Redirecting to SynOS...</p>
+    </div>
+    <script>
+        console.log('Asana OAuth redirect page loaded');
+        console.log('Current URL:', window.location.href);
+        
+        // Get the authorization code from URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        const state = params.get('state');
+        const error = params.get('error');
+        
+        console.log('Code:', code ? 'Present' : 'Missing');
+        console.log('Error:', error || 'None');
+        
+        if (error) {
+            console.error('OAuth error:', error);
+            document.querySelector('.container').innerHTML = `
+                <h1>❌ Authorization Failed</h1>
+                <p>${error}</p>
+                <p style="font-size: 14px; margin-top: 20px;">You can close this page and try again.</p>
+            `;
+        } else if (code) {
+            // Build the redirect URL back to the app
+            const redirectURL = `synos://oauth?code=${encodeURIComponent(code)}${state ? '&state=' + encodeURIComponent(state) : ''}`;
+            
+            console.log('Redirecting to:', redirectURL);
+            
+            // Attempt to redirect to the app
+            window.location.href = redirectURL;
+            
+            // Show success message (will only be visible if app redirect fails)
+            setTimeout(() => {
+                document.querySelector('.container').innerHTML = `
+                    <h1>✅ Authorization Successful!</h1>
+                    <p>If SynOS didn't open automatically, please open it manually.</p>
+                    <p style="font-size: 14px; margin-top: 20px;">You can close this page.</p>
+                `;
+            }, 500);
+        } else {
+            console.error('No code or error received');
+            document.querySelector('.container').innerHTML = `
+                <h1>⚠️ Unexpected Response</h1>
+                <p>No authorization code was received from Asana.</p>
+                <p style="font-size: 14px; margin-top: 20px;">Please try connecting again.</p>
+            `;
+        }
+    </script>
+</body>
+</html>
