@@ -1,26 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Connecting to Asana...</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asana OAuth - SynOS</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background: linear-gradient(135deg, #f06595 0%, #e64980 100%);
+            background: linear-gradient(135deg, #F06A6A 0%, #F49E4C 100%);
             color: white;
         }
         .container {
             text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin: 0 0 20px 0;
+            font-size: 24px;
         }
         .spinner {
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top: 4px solid white;
+            border: 4px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
+            border-top: 4px solid white;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
@@ -30,58 +40,45 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        p {
+            margin: 10px 0;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎯 Connecting to Asana...</h1>
+        <h1>📋 Connecting to Asana</h1>
         <div class="spinner"></div>
-        <p>Redirecting to SynOS...</p>
+        <p>Returning to SynOS...</p>
     </div>
+
     <script>
-        console.log('Asana OAuth redirect page loaded');
-        console.log('Current URL:', window.location.href);
+        // Extract OAuth parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
         
-        // Get the authorization code from URL parameters
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
-        const state = params.get('state');
-        const error = params.get('error');
-        
-        console.log('Code:', code ? 'Present' : 'Missing');
+        console.log('Asana OAuth Redirect Handler');
+        console.log('Code:', code ? 'Present' : 'None');
         console.log('Error:', error || 'None');
         
-        if (error) {
-            console.error('OAuth error:', error);
-            document.querySelector('.container').innerHTML = `
-                <h1>❌ Authorization Failed</h1>
-                <p>${error}</p>
-                <p style="font-size: 14px; margin-top: 20px;">You can close this page and try again.</p>
-            `;
-        } else if (code) {
-            // Build the redirect URL back to the app
-            const redirectURL = `synos://oauth?code=${encodeURIComponent(code)}${state ? '&state=' + encodeURIComponent(state) : ''}`;
-            
+        // Redirect back to SynOS app
+        if (code) {
+            // Success - redirect with authorization code
+            const redirectURL = `synos://asana-callback?code=${encodeURIComponent(code)}`;
             console.log('Redirecting to:', redirectURL);
-            
-            // Attempt to redirect to the app
             window.location.href = redirectURL;
-            
-            // Show success message (will only be visible if app redirect fails)
-            setTimeout(() => {
-                document.querySelector('.container').innerHTML = `
-                    <h1>✅ Authorization Successful!</h1>
-                    <p>If SynOS didn't open automatically, please open it manually.</p>
-                    <p style="font-size: 14px; margin-top: 20px;">You can close this page.</p>
-                `;
-            }, 500);
+        } else if (error) {
+            // Error - redirect with error information
+            const redirectURL = `synos://asana-callback?error=${encodeURIComponent(error)}`;
+            console.log('Redirecting with error:', redirectURL);
+            window.location.href = redirectURL;
         } else {
-            console.error('No code or error received');
-            document.querySelector('.container').innerHTML = `
-                <h1>⚠️ Unexpected Response</h1>
-                <p>No authorization code was received from Asana.</p>
-                <p style="font-size: 14px; margin-top: 20px;">Please try connecting again.</p>
-            `;
+            // No code or error - something went wrong
+            console.error('No code or error parameter found');
+            window.location.href = 'synos://asana-callback?error=invalid_callback';
         }
     </script>
 </body>
