@@ -1,12 +1,85 @@
 <!DOCTYPE html>
-<html><head><title>Connecting to SynOS...</title></head>
-<body><script>
-const params = new URLSearchParams(window.location.search);
-const code = params.get('code');
-const error = params.get('error');
-if (code) {
-  window.location.href = `synos://zoom-oauth?code=${code}`;
-} else if (error) {
-  window.location.href = `synos://zoom-oauth?error=${error}`;
-}
-</script><p>Connecting to SynOS...</p></body></html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoom OAuth - SynOS</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #2D8CFF 0%, #0B5CFF 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin: 0 0 20px 0;
+            font-size: 24px;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        p {
+            margin: 10px 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📹 Connecting to Zoom</h1>
+        <div class="spinner"></div>
+        <p>Returning to SynOS...</p>
+    </div>
+
+    <script>
+        // Extract OAuth parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
+        
+        console.log('Zoom OAuth Redirect Handler');
+        console.log('Code:', code ? 'Present' : 'None');
+        console.log('Error:', error || 'None');
+        
+        // Redirect back to SynOS app
+        if (code) {
+            // Success - redirect with authorization code
+            const redirectURL = `synos://zoom-callback?code=${encodeURIComponent(code)}`;
+            console.log('Redirecting to:', redirectURL);
+            window.location.href = redirectURL;
+        } else if (error) {
+            // Error - redirect with error information
+            const redirectURL = `synos://zoom-callback?error=${encodeURIComponent(error)}`;
+            console.log('Redirecting with error:', redirectURL);
+            window.location.href = redirectURL;
+        } else {
+            // No code or error - something went wrong
+            console.error('No code or error parameter found');
+            window.location.href = 'synos://zoom-callback?error=invalid_callback';
+        }
+    </script>
+</body>
+</html>
